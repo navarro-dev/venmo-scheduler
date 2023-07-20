@@ -1,3 +1,7 @@
+from helper import setup_logger
+
+logger = setup_logger(__name__)
+
 class VRequest():
 
     def __init__(self, username, amount, comment, client, id=None) -> None:
@@ -9,7 +13,7 @@ class VRequest():
 
     def send_request(self):
         self.client.payment.request_money(self.amount, self.comment, self.id)
-        print(f"Payment request has been sent to {self.username}.")
+        logger.info(f"Payment request has been sent to {self.username}.")
     
     def validate_user(self):
         search = self.client.user.search_for_users(query=f"{self.username}")
@@ -19,7 +23,7 @@ class VRequest():
                     self.set_id(user.id)
                     return True
         else:
-            print(f"{self.username} user not found. Verify username and try again.")
+            logger.warning(f"User {self.username} not found. Verify username and try again.")
 
         return False
     
