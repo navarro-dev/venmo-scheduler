@@ -1,12 +1,12 @@
-from helper import setup_logger
+from helper import init_logger
 
-logger = setup_logger(__name__)
+logger = init_logger(__name__)
 
 class VRequest():
 
     def __init__(self, username, amount, comment, client, id=None) -> None:
         self.username = username
-        self.amount = amount
+        self.amount = float(amount)
         self.comment = comment
         self.client = client
         self.id = id
@@ -21,6 +21,7 @@ class VRequest():
             for user in search:
                 if (user.username).lower() == (self.username).lower():
                     self.set_id(user.id)
+                    logger.info(f"{user.username} user found!")
                     return True
         else:
             logger.warning(f"User {self.username} not found. Verify username and try again.")

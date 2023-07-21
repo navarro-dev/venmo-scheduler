@@ -1,6 +1,15 @@
 import logging
 
-def setup_logger(module_name):
+def validate_vars(**kwargs):
+    try:
+        for k, v in kwargs.items():
+            if not v or v == [''] or v == 0:
+                raise ValueError(f"The {k.upper()} value is empty or not set. Add value and try again.")
+    except Exception as e:
+        logger.error(str(e))
+        raise
+
+def init_logger(module_name):
     # create logging formatter
     logFormatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger(module_name)
@@ -16,8 +25,4 @@ def setup_logger(module_name):
 
     return logger
 
-# validate currency amount input
-def validate_currency():
-    #TODO
-    print()
-
+logger = init_logger(__name__)
