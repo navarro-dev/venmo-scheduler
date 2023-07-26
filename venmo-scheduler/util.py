@@ -33,7 +33,7 @@ class Venmo():
 
     def send_request(self, User, amount, comment):
         try:
-            self.client.payment.request_money(amount, comment, User.id)
+            self.client.payment.request_money(amount=amount, note=comment, target_user=User)
             logger.info(f"Payment request has been sent to {User.username}.")
         except Exception as e:
             logger.error(str(e))
@@ -41,7 +41,7 @@ class Venmo():
     
     def validate_user(self, username):
         try:
-            user = self.client.user.get_user_by_username(username)
+            user = self.client.user.get_user_by_username(username=username)
             if user:
                 logger.info(f"{user.username} user found!")
             else:

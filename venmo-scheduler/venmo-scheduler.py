@@ -11,7 +11,7 @@ def main():
 
     access_token = os.environ["ACCESS_TOKEN"]
     request_users = [u.strip() for u in os.environ["REQUEST_USERS"].split(",")]
-    request_amount = os.environ.get("REQUEST_AMOUNT", 0)
+    request_amount = float(os.environ.get("REQUEST_AMOUNT", 0))
     request_comment = os.environ["REQUEST_COMMENT"]
     send_request = os.environ.get("SEND_REQUEST", "FALSE").upper() == "TRUE"
 
