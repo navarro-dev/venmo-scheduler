@@ -1,5 +1,6 @@
 from venmo_api import Client
 import logging
+import os
 
 def validate_vars(**kwargs):
     try:
@@ -11,18 +12,20 @@ def validate_vars(**kwargs):
         raise
 
 def init_logger(module_name):
-    # create logging formatter
-    logFormatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    
     logger = logging.getLogger(module_name)
     logger.setLevel(logging.INFO)
 
-    # create console handler
-    consoleHandler = logging.StreamHandler()
-    consoleHandler.setLevel(logging.INFO)
-    consoleHandler.setFormatter(logFormatter)
+    # create handler only if application runs outside AWS Lambda, Lambda uses it's own handler
+    if "LAMBDA_TASK_ROOT" not in os.environ:
+        # create logging formatter and console handler for local dev
+        logFormatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        consoleHandler = logging.StreamHandler()
+        consoleHandler.setLevel(logging.INFO)
+        consoleHandler.setFormatter(logFormatter)
 
-    # Add console handler to logger
-    logger.addHandler(consoleHandler)
+        logger.addHandler(consoleHandler)
+    
 
     return logger
     

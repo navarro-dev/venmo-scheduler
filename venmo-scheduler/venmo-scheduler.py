@@ -18,9 +18,11 @@ def main():
     validate_vars(access_token=access_token,
                  request_users=request_users,
                  request_amount=request_amount)
+    logger.info("Required environment variables are set properly.")
 
     venmo = Venmo(access_token=access_token)
     
+    logger.info("Validating user list and sending payment requests.")
     for username in request_users:
         user_found = venmo.validate_user(username)
         if user_found:
