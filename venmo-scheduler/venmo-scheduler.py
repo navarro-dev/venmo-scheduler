@@ -1,5 +1,5 @@
 from venmo_api import User
-from util import Venmo, init_logger, validate_vars
+from util import Venmo, init_logger, validate_vars, is_request_sent
 import os
 
 def run_lambda(event, context):
@@ -27,7 +27,12 @@ def main():
         user_found = venmo.validate_user(username)
         if user_found:
             user = User.from_json(user_found._json)
-            if send_request:
+
+            monthly_request_sent = is_request_sent(username=user.username, 
+                                                   amount=request_amount,
+                                                   request_list=venmo.get_charge_payments())
+
+            if send_request and not monthly_request_sent:
                 venmo.send_request(user, request_amount, request_comment)
 
 if __name__ == "__main__":

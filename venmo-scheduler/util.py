@@ -1,6 +1,26 @@
 from venmo_api import Client
+from datetime import datetime
 import logging
 import os
+
+def is_request_sent(username, amount, request_list):
+
+    for request in request_list:
+
+        request_date = datetime.fromtimestamp(request.date_created)
+        today = datetime.now()
+
+        if (request.target.username == username and 
+                float(request.amount) == amount and
+                month_year_date(request_date) == month_year_date(today)):
+            logger.info(f"Payment request has already been sent to {username} this month.")
+            return True
+        else:
+            return False
+            
+
+def month_year_date(date):
+    return date.strftime("%B %d %Y")
 
 def validate_vars(**kwargs):
     try:
@@ -54,5 +74,12 @@ class Venmo():
             raise
 
         return user
+    
+    def get_charge_payments(self):
+        try:
+            return self.client.payment.get_charge_payments()
+        except Exception as e:
+            logger.error(str(e))
+            raise
 
 logger = init_logger(__name__)
