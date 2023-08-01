@@ -12,12 +12,12 @@ def is_request_sent(username, amount, request_list):
 
         if (request.target.username == username and 
                 float(request.amount) == amount and
+                request.status.name != "CANCELLED" and
                 month_year_date(request_date) == month_year_date(today)):
             logger.info(f"Payment request has already been sent to {username} this month.")
             return True
-        else:
-            return False
-            
+        
+    return False
 
 def month_year_date(date):
     return date.strftime("%B %d %Y")
