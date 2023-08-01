@@ -3,7 +3,7 @@ from datetime import datetime
 import logging
 import os
 
-def is_request_sent(username, amount, request_list):
+def is_request_sent(username, amount, note, request_list):
 
     for request in request_list:
 
@@ -13,7 +13,9 @@ def is_request_sent(username, amount, request_list):
         if (request.target.username == username and 
                 float(request.amount) == amount and
                 request.status.name != "CANCELLED" and
+                request.note == note and
                 month_year_date(request_date) == month_year_date(today)):
+            
             logger.info(f"Payment request has already been sent to {username} this month.")
             return True
         
@@ -54,9 +56,9 @@ class Venmo():
     def __init__(self, access_token) -> None:
         self.client = Client(access_token=access_token)
 
-    def send_request(self, User, amount, comment):
+    def send_request(self, User, amount, note):
         try:
-            self.client.payment.request_money(amount=amount, note=comment, target_user=User)
+            self.client.payment.request_money(amount=amount, note=note, target_user=User)
             logger.info(f"Payment request has been sent to {User.username}.")
         except Exception as e:
             logger.error(str(e))
