@@ -11,12 +11,13 @@ env:
 
 jobs:
   terraform:
-    name: "Terraform Plan Dev"
+    name: "Terraform Plan"
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
-    environment: dev
+    environment: 
+      name: dev
     steps:
       - name: Checkout
         uses: actions/checkout@v3
