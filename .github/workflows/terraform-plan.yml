@@ -30,6 +30,12 @@ jobs:
       - name: "Copy lambda code to terraform folder for zipping"
         run: $PWD/pre-terraform.sh
 
+      - name: "debug workflow 1"
+        run: ls -l
+
+      - name: "debug workflow 1"
+        run: ls -l ${{ env.CONFIG_DIRECTORY }}
+
       - name: Upload Configuration
         uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0
         id: plan-upload
