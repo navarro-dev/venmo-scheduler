@@ -16,20 +16,21 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+    environment: ${{ GITHUB_REF_NAME }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up Python 3.10
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.10
+          python-version: "3.10"
 
       - name: "Copy lambda code to terraform folder for zipping"
         run: $PWD/pre-terraform.sh
 
       - name: Upload Configuration
-        uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0
+        uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.2
         id: plan-upload
         with:
           workspace: ${{ env.TF_WORKSPACE }}
@@ -37,7 +38,7 @@ jobs:
           speculative: true
 
       - name: Create Plan Run
-        uses: hashicorp/tfc-workflows-github/actions/create-run@v1.0.0
+        uses: hashicorp/tfc-workflows-github/actions/create-run@v1.0.2
         id: plan-run
         with:
           workspace: ${{ env.TF_WORKSPACE }}
@@ -45,10 +46,10 @@ jobs:
           plan_only: true
 
       - name: Get Plan Output
-        uses: hashicorp/tfc-workflows-github/actions/plan-output@v1.0.0
+        uses: hashicorp/tfc-workflows-github/actions/plan-output@v1.0.2
         id: plan-output
         with:
-          plan: ${{ fromJSON(steps.plan-run.outputs.payload).data.relationships.plan.data.id }}
+          plan: ${{ steps.plan-run.outputs.plan_id }}
 
       - name: Update PR
         uses: actions/github-script@v6
