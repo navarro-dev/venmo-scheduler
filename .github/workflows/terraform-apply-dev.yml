@@ -1,9 +1,11 @@
-name: Terraform Cloud Apply Run Dev
+name: Terraform Apply Dev
 
 on:
   push:
     branches:
       - dev
+    paths-ignore:
+      - '*.md'
 
 env:
   TF_CLOUD_ORGANIZATION: "${{ vars.TF_CLOUD_ORGANIZATION }}"
