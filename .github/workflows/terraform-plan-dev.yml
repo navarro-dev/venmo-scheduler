@@ -1,9 +1,11 @@
-name: "Terraform Cloud Speculative Run Dev"
+name: "Terraform Plan Dev"
 
 on:
   pull_request:
     branches:
       - dev
+    paths-ignore:
+      - '*.md'
 
 env:
   TF_CLOUD_ORGANIZATION: "${{ vars.TF_CLOUD_ORGANIZATION }}"
