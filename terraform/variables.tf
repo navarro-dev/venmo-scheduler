@@ -41,7 +41,7 @@ variable "enable_venmo_event_rule" {
 }
 
 variable "venmo_request_schedule" {
-    description = "Venmo request schedule for Event Rule. Ex. cron(0 12 15 * *)"
+    description = "Venmo request schedule for Event Rule. Ex. cron(0 12 15 * ? *)"
     type = string
 }
 
