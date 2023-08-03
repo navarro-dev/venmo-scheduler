@@ -18,6 +18,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: "Copy lambda code to terraform folder for zipping"
+        run: $PWD/pre-terraform.sh
+
       - uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.2
         id: upload
         with:
