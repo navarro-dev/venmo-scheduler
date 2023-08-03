@@ -1,4 +1,4 @@
-name: "Terraform Plan Prod"
+name: "Terraform Cloud Speculative Run Prod"
 
 on:
   pull_request:
@@ -12,7 +12,7 @@ env:
   CONFIG_DIRECTORY: "./terraform"
 
 jobs:
-  terraform:
+  terraform-cloud-speculative-run:
     name: "Terraform Plan"
     runs-on: ubuntu-latest
     permissions:

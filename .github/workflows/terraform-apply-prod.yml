@@ -1,0 +1,46 @@
+name: Terraform Cloud Apply Run Prod
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  TF_CLOUD_ORGANIZATION: "${{ vars.TF_CLOUD_ORGANIZATION }}"
+  TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
+  TF_WORKSPACE: "${{ vars.TF_WORKSPACE }}"
+  CONFIG_DIRECTORY: "./terraform"
+
+jobs:
+  terraform-cloud-apply-run:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: "Copy lambda code to terraform folder for zipping"
+        run: $PWD/pre-terraform.sh
+
+      - uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.2
+        id: upload
+        with:
+          workspace: ${{ env.TF_WORKSPACE }}
+          directory: ${{ env.CONFIG_DIRECTORY }}
+
+      - uses: hashicorp/tfc-workflows-github/actions/create-run@v1.0.2
+        id: create-run
+        with:
+          workspace: ${{ env.TF_WORKSPACE }}
+          configuration_version: ${{ steps.upload.outputs.configuration_version_id }}
+
+      - uses: hashicorp/tfc-workflows-github/actions/apply-run@v1.0.2
+        id: apply
+        if: ${{ fromJSON(steps.create-run.outputs.payload).data.attributes.actions.IsConfirmable }}
+        with:
+          run: ${{ steps.create-run.outputs.run_id }}
+          comment: "Apply Run from GitHub Actions CI ${{ github.sha }}"
