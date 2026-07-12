@@ -72,6 +72,9 @@ jobs:
     if: github.ref == 'refs/heads/development'
     runs-on: ubuntu-latest
     environment: dev
+    permissions:
+      id-token: write
+      contents: read
     defaults:
       run:
         working-directory: infrastructure
@@ -118,6 +121,9 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: prod
+    permissions:
+      id-token: write
+      contents: read
     defaults:
       run:
         working-directory: infrastructure
