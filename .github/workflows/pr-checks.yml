@@ -1,0 +1,71 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches:
+      - development
+      - main
+
+jobs:
+  python-tests:
+    name: Python Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest
+
+      - name: Run tests
+        run: pytest test/ -v
+
+      # TODO: add Python linting (ruff or flake8) and pip-audit for dependency vulnerability scanning
+
+  cdk-tests:
+    name: CDK Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infrastructure
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: infrastructure/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Run tests
+        run: npm test
+
+      - name: CDK synth
+        run: npx cdk synth
+        env:
+          ENVIRONMENT: ci
+          ENABLE_EVENT_RULE: 'false'
+          SCHEDULE_EXPRESSION: 'cron(0 12 15 * ? *)'
+          VENMO_ACCESS_TOKEN: dummy
+          REQUEST_USERS: dummy
+          REQUEST_AMOUNT: '1'
+          REQUEST_NOTE: dummy
+          SEND_REQUEST: 'FALSE'
+          ALERT_EMAIL: ci@example.com
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high

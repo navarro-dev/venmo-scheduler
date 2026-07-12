@@ -1,0 +1,165 @@
+name: CDK Deploy
+
+on:
+  push:
+    branches:
+      - development
+      - main
+    paths-ignore:
+      - '*.md'
+      - 'terraform/**'
+
+jobs:
+  python-tests:
+    name: Python Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest
+
+      - name: Run tests
+        run: pytest test/ -v
+
+  cdk-tests:
+    name: CDK Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infrastructure
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: infrastructure/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Run tests
+        run: npm test
+
+      - name: CDK synth
+        run: npx cdk synth
+        env:
+          ENVIRONMENT: ci
+          ENABLE_EVENT_RULE: 'false'
+          SCHEDULE_EXPRESSION: 'cron(0 12 15 * ? *)'
+          VENMO_ACCESS_TOKEN: dummy
+          REQUEST_USERS: dummy
+          REQUEST_AMOUNT: '1'
+          REQUEST_NOTE: dummy
+          SEND_REQUEST: 'FALSE'
+          ALERT_EMAIL: ci@example.com
+
+  deploy-dev:
+    name: Deploy to Dev
+    needs: [python-tests, cdk-tests]
+    if: github.ref == 'refs/heads/development'
+    runs-on: ubuntu-latest
+    environment: dev
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      ENVIRONMENT: dev
+      ENABLE_EVENT_RULE: ${{ vars.ENABLE_EVENT_RULE }}
+      SCHEDULE_EXPRESSION: ${{ vars.SCHEDULE_EXPRESSION }}
+      VENMO_ACCESS_TOKEN: ${{ secrets.VENMO_ACCESS_TOKEN }}
+      REQUEST_USERS: ${{ vars.REQUEST_USERS }}
+      REQUEST_AMOUNT: ${{ vars.REQUEST_AMOUNT }}
+      REQUEST_NOTE: ${{ vars.REQUEST_NOTE }}
+      SEND_REQUEST: ${{ vars.SEND_REQUEST }}
+      ALERT_EMAIL: ${{ vars.ALERT_EMAIL }}
+    defaults:
+      run:
+        working-directory: infrastructure
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: infrastructure/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Requires an IAM OIDC identity provider and role configured in AWS.
+      # Store the role ARN as AWS_ROLE_ARN in the dev GitHub environment secrets.
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: CDK bootstrap
+        run: npx cdk bootstrap
+
+      - name: Deploy
+        run: npx cdk deploy --require-approval never
+
+  deploy-prod:
+    name: Deploy to Prod
+    needs: [python-tests, cdk-tests]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: prod
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      ENVIRONMENT: prod
+      ENABLE_EVENT_RULE: ${{ vars.ENABLE_EVENT_RULE }}
+      SCHEDULE_EXPRESSION: ${{ vars.SCHEDULE_EXPRESSION }}
+      VENMO_ACCESS_TOKEN: ${{ secrets.VENMO_ACCESS_TOKEN }}
+      REQUEST_USERS: ${{ vars.REQUEST_USERS }}
+      REQUEST_AMOUNT: ${{ vars.REQUEST_AMOUNT }}
+      REQUEST_NOTE: ${{ vars.REQUEST_NOTE }}
+      SEND_REQUEST: ${{ vars.SEND_REQUEST }}
+      ALERT_EMAIL: ${{ vars.ALERT_EMAIL }}
+    defaults:
+      run:
+        working-directory: infrastructure
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: infrastructure/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Requires an IAM OIDC identity provider and role configured in AWS.
+      # Store the role ARN as AWS_ROLE_ARN in the prod GitHub environment secrets.
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: CDK bootstrap
+        run: npx cdk bootstrap
+
+      - name: Deploy
+        run: npx cdk deploy --require-approval never
