@@ -14,10 +14,9 @@ def set_logger(logger_name: str) -> logging.Logger:
 
     _FORMMATTED_LOGGERS.add(logger_name)
 
-    logger.propagate = False
-
     # create handler only if application runs outside AWS Lambda, Lambda uses it's own handler
     if "LAMBDA_TASK_ROOT" not in os.environ:
+        logger.propagate = False
         # create logging formatter and console handler for local dev
         logFormatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%dT%H:%M:%S')
         consoleHandler = logging.StreamHandler()
