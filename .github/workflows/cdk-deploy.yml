@@ -75,6 +75,16 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    env:
+      ENVIRONMENT: dev
+      ENABLE_EVENT_RULE: ${{ vars.ENABLE_EVENT_RULE }}
+      SCHEDULE_EXPRESSION: ${{ vars.SCHEDULE_EXPRESSION }}
+      VENMO_ACCESS_TOKEN: ${{ secrets.VENMO_ACCESS_TOKEN }}
+      REQUEST_USERS: ${{ vars.REQUEST_USERS }}
+      REQUEST_AMOUNT: ${{ vars.REQUEST_AMOUNT }}
+      REQUEST_NOTE: ${{ vars.REQUEST_NOTE }}
+      SEND_REQUEST: ${{ vars.SEND_REQUEST }}
+      ALERT_EMAIL: ${{ vars.ALERT_EMAIL }}
     defaults:
       run:
         working-directory: infrastructure
@@ -104,16 +114,6 @@ jobs:
 
       - name: Deploy
         run: npx cdk deploy --require-approval never
-        env:
-          ENVIRONMENT: dev
-          ENABLE_EVENT_RULE: ${{ vars.ENABLE_EVENT_RULE }}
-          SCHEDULE_EXPRESSION: ${{ vars.SCHEDULE_EXPRESSION }}
-          VENMO_ACCESS_TOKEN: ${{ secrets.VENMO_ACCESS_TOKEN }}
-          REQUEST_USERS: ${{ vars.REQUEST_USERS }}
-          REQUEST_AMOUNT: ${{ vars.REQUEST_AMOUNT }}
-          REQUEST_NOTE: ${{ vars.REQUEST_NOTE }}
-          SEND_REQUEST: ${{ vars.SEND_REQUEST }}
-          ALERT_EMAIL: ${{ vars.ALERT_EMAIL }}
 
   deploy-prod:
     name: Deploy to Prod
@@ -124,6 +124,16 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    env:
+      ENVIRONMENT: prod
+      ENABLE_EVENT_RULE: ${{ vars.ENABLE_EVENT_RULE }}
+      SCHEDULE_EXPRESSION: ${{ vars.SCHEDULE_EXPRESSION }}
+      VENMO_ACCESS_TOKEN: ${{ secrets.VENMO_ACCESS_TOKEN }}
+      REQUEST_USERS: ${{ vars.REQUEST_USERS }}
+      REQUEST_AMOUNT: ${{ vars.REQUEST_AMOUNT }}
+      REQUEST_NOTE: ${{ vars.REQUEST_NOTE }}
+      SEND_REQUEST: ${{ vars.SEND_REQUEST }}
+      ALERT_EMAIL: ${{ vars.ALERT_EMAIL }}
     defaults:
       run:
         working-directory: infrastructure
@@ -153,13 +163,3 @@ jobs:
 
       - name: Deploy
         run: npx cdk deploy --require-approval never
-        env:
-          ENVIRONMENT: prod
-          ENABLE_EVENT_RULE: ${{ vars.ENABLE_EVENT_RULE }}
-          SCHEDULE_EXPRESSION: ${{ vars.SCHEDULE_EXPRESSION }}
-          VENMO_ACCESS_TOKEN: ${{ secrets.VENMO_ACCESS_TOKEN }}
-          REQUEST_USERS: ${{ vars.REQUEST_USERS }}
-          REQUEST_AMOUNT: ${{ vars.REQUEST_AMOUNT }}
-          REQUEST_NOTE: ${{ vars.REQUEST_NOTE }}
-          SEND_REQUEST: ${{ vars.SEND_REQUEST }}
-          ALERT_EMAIL: ${{ vars.ALERT_EMAIL }}
