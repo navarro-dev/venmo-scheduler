@@ -1,6 +1,6 @@
 # Venmo Scheduler
 
-![TerraformApplyProd](https://github.com/navarro-dev/venmo-scheduler/actions/workflows/terraform-apply.yml/badge.svg)
+![CDKDeploy](https://github.com/navarro-dev/venmo-scheduler/actions/workflows/cdk-deploy.yml/badge.svg)
 
 
 
@@ -14,7 +14,7 @@ The project is designed to touch on multiple technologies often encountered as a
 
 * [![Python][python-shield]][python-url]
 * [![AWS][aws-shield]][aws-url]
-* [![Terraform][terraform-shield]][terraform-url]
+* [![AWS CDK][cdk-shield]][cdk-url]
 * [![Github][github-shield]][github-url]
 
 ## How It Works
@@ -24,11 +24,11 @@ Python script sends Venmo payment requests to the list of users provided. Script
 
 ### Infrastructure
 
-Terraform is used to define all the AWS resources needed to run the script in a Lambda. An eventbridge rule is used to trigger the lambda on a monthly cron schedule. A cloudwatch alarm monitors for any lambda execution errors or code errors and sents them to my email address via SNS. 
+AWS CDK (TypeScript) is used to define all AWS resources needed to run the script in a Lambda. An EventBridge rule triggers the Lambda on a monthly cron schedule. A CloudWatch alarm monitors for any Lambda errors and sends notifications via SNS.
 
 ### CI/CD
 
-A Github Actions workflow is triggered upon creating a PR against the main branch to run a speculative plan on the changes and it is required to pass before the PR can be merged. Once the PR is merged another workload is triggered that applied the plan to deploy the AWS changes made in the Terraform definitions.
+Two GitHub Actions workflows handle CI/CD. `pr-checks.yml` runs Python and CDK unit tests on every pull request against `development` or `main`. `cdk-deploy.yml` runs tests and deploys the CDK stack — pushes to `development` deploy to the `dev` environment, pushes to `main` deploy to `prod`. AWS authentication uses OIDC (no long-lived keys).
 
 ## Getting Started
 
@@ -36,31 +36,18 @@ To get your own instance up and running follow these steps.
 
 ### Prerequisites
 
-- Terraform Cloud Account
 - AWS Account
+- AWS CDK CLI (`npm install -g aws-cdk`)
+- Node.js (LTS)
+- Python 3.12
+
 ### Steps
-1. In your Terraform Cloud Workspace create variables. [Example values here.](example.md)
-    - required variables:
-        - `venmo_access_token` 
-        - `venmo_request_amount`
-        - `venmo_request_note`
-        - `venmo_request_schedule`
-        - `venmo_request_users`
-        - `send_request`
-        - `topic_subscription_email`
-    - optional variables
-        - `environment`
-2. In your forked repo of this repository create variables
-    - in Environment named `prod`, create if needed
-        - `TF_CLOUD_ORGANIZATION`
-        - `TF_WORKSPACE`
-    - in Action secrets
-        - `TF_API_TOKEN`
-3. Trigger the terraform-apply.yml to deploy.
-
-## Roadmap
-
-- [ ] Add unit tests
+1. Configure an AWS IAM OIDC identity provider for GitHub Actions.
+2. Create an IAM role with the OIDC trust policy scoped to your repo's `dev` and `prod` environments.
+3. In your forked repo, create GitHub Environments named `dev` and `prod`, each with:
+    - Secret: `AWS_ROLE_ARN`
+    - Variables: `AWS_REGION`, `SCHEDULE_EXPRESSION`, `ENABLE_EVENT_RULE`, `REQUEST_USERS`, `REQUEST_AMOUNT`, `REQUEST_NOTE`, `SEND_REQUEST`, `ALERT_EMAIL`
+4. Push to `development` to trigger a dev deployment, or merge to `main` for prod.
 
 ## Acknowledgements
 
@@ -74,7 +61,7 @@ To get your own instance up and running follow these steps.
 [python-url]: https://www.python.org/
 [aws-shield]: https://img.shields.io/badge/awslambda-FF9900?style=for-the-badge&logo=awslambda&logoColor=white
 [aws-url]: https://aws.amazon.com/
+[cdk-shield]: https://img.shields.io/badge/AWS_CDK-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white
+[cdk-url]: https://aws.amazon.com/cdk/
 [github-shield]: https://img.shields.io/badge/githubactions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white
 [github-url]: https://github.com/
-[terraform-shield]: https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white
-[terraform-url]: https://www.terraform.io/
